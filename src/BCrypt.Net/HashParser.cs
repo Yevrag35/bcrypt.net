@@ -43,14 +43,14 @@ namespace BCrypt.Net
             if (hash.Length != 59 && hash.Length != 60)
             {
                 // Incorrect full hash length
-                format = null;
+                format = HashFormatDescriptor.Empty;
                 return false;
             }
 
             if (!hash.StartsWith("$2"))
             {
                 // Not a bcrypt hash
-                format = null;
+                format = HashFormatDescriptor.Empty;
                 return false;
             }
 
@@ -68,7 +68,7 @@ namespace BCrypt.Net
 
             if (hash[offset++] != '$')
             {
-                format = null;
+                format = HashFormatDescriptor.Empty;
                 return false;
             }
 
@@ -76,13 +76,13 @@ namespace BCrypt.Net
             if (!IsAsciiNumeric(hash[offset++])
                 || !IsAsciiNumeric(hash[offset++]))
             {
-                format = null;
+                format = HashFormatDescriptor.Empty;
                 return false;
             }
 
             if (hash[offset++] != '$')
             {
-                format = null;
+                format = HashFormatDescriptor.Empty;
                 return false;
             }
 
@@ -91,12 +91,12 @@ namespace BCrypt.Net
             {
                 if (!IsValidBCryptBase64Char(hash[i]))
                 {
-                    format = null;
+                    format = HashFormatDescriptor.Empty;
                     return false;
                 }
             }
 
-            return true;
+            return !format.IsEmpty;
         }
 
         private static bool IsValidBCryptVersionChar(char value)
@@ -127,23 +127,41 @@ namespace BCrypt.Net
             throw new SaltParseException("Invalid Hash Format");
         }
 
-        internal class HashFormatDescriptor
+        internal readonly struct HashFormatDescriptor
         {
-            public HashFormatDescriptor(int versionLength)
+            internal HashFormatDescriptor(int versionLength)
             {
+                int workfactorOffset = 1 + versionLength + 1;
+                int settingLength = workfactorOffset + 2;
+
                 VersionLength = versionLength;
-                WorkfactorOffset = 1 + VersionLength + 1;
-                SettingLength = WorkfactorOffset + 2;
-                HashOffset = SettingLength + 1;
+                WorkfactorOffset = workfactorOffset;
+                SettingLength = settingLength;
+                HashOffset = settingLength + 1;
+                _isNotEmpty = true;
+            }
+            private HashFormatDescriptor(bool empty)
+            {
+                _isNotEmpty = !empty;
+                VersionLength = 0;
+                WorkfactorOffset = 0;
+                SettingLength = 0;
+                HashOffset = 0;
             }
 
-            public int VersionLength { get; }
+            private readonly bool _isNotEmpty;
 
-            public int WorkfactorOffset { get; }
+            internal bool IsEmpty => !_isNotEmpty;
 
-            public int SettingLength { get; }
+            internal readonly int VersionLength;
 
-            public int HashOffset { get; }
+            internal readonly int WorkfactorOffset;
+
+            internal readonly int SettingLength;
+
+            internal readonly int HashOffset;
+
+            internal static readonly HashFormatDescriptor Empty = new HashFormatDescriptor(empty: true);
         }
     }
 }
