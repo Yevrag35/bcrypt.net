@@ -752,7 +752,13 @@ namespace BCrypt.Net
         /// <exception cref="HashInformationException"></exception>
         public static bool PasswordNeedsRehash(string hash, int newMinimumWorkLoad)
         {
-            int currentWorkLoad = HashParser.GetWorkFactor(hash);
+            int currentWorkLoad = HashParser.GetWorkFactor(
+#if HAS_SPAN
+                hash.AsSpan()
+#else
+                hash
+#endif
+            );
 
             return currentWorkLoad < newMinimumWorkLoad;
         }

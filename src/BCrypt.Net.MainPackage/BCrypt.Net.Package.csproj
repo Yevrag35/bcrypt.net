@@ -36,13 +36,13 @@
     <Compile Include="..\BCrypt.Net\**\*.cs" Exclude="..\BCrypt.Net\obj\**\*.cs" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net20' ">
+  <!--<PropertyGroup Condition="'$(TargetFramework)' == 'net20' ">
     <FrameworkPathOverride Condition="'$(TargetFramework)' == 'net20'">C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'net35' ">
     <FrameworkPathOverride Condition="'$(TargetFramework)' == 'net35'">C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
-  </PropertyGroup>
+  </PropertyGroup>-->
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.1' ">
     <DefineConstants>$(DefineConstants);NET2_1</DefineConstants>

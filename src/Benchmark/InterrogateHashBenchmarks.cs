@@ -24,7 +24,7 @@ namespace BCrypt.Net.Benchmarks
         [Arguments( "$2a$10$fVH8e28OQRj9tqiDXs1e1uxpsjN0c7II7YPKXua2NAKYvM6iQk7dq")]
         public void InterrogateHashUsingParser(string hash)
         {
-            Decoder.GetHashInformation(hash);
+            HashParser.GetHashInformation(hash);
         }
 
     }

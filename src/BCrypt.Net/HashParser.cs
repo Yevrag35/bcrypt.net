@@ -7,7 +7,7 @@ namespace BCrypt.Net
         private static readonly HashFormatDescriptor OldFormatDescriptor = new HashFormatDescriptor(versionLength: 1);
         private static readonly HashFormatDescriptor NewFormatDescriptor = new HashFormatDescriptor(versionLength: 2);
 
-        public static HashInformation GetHashInformation(string hash)
+        internal static HashInformation GetHashInformation(string hash)
         {
             if (!IsValidHash(hash, out var format))
             {
@@ -21,7 +21,28 @@ namespace BCrypt.Net
                 hash.Substring(format.HashOffset));
         }
 
-        public static int GetWorkFactor(string hash)
+#if HAS_SPAN
+        internal static HashInformation GetHashInformation(ReadOnlySpan<char> hash)
+        {
+            if (!IsValidHash(hash, out var format))
+            {
+                ThrowInvalidHashFormat();
+            }
+
+            return new HashInformation(
+                hash.Slice(0, format.SettingLength).ToString(),
+                hash.Slice(1, format.VersionLength).ToString(),
+                hash.Slice(format.WorkfactorOffset, 2).ToString(),
+                hash.Slice(format.HashOffset).ToString());
+        }
+#endif
+
+        internal static int GetWorkFactor(
+#if HAS_SPAN
+            ReadOnlySpan<char> hash)
+#else
+            string hash)
+#endif
         {
             if (!IsValidHash(hash, out var format))
             {
@@ -33,13 +54,18 @@ namespace BCrypt.Net
             return 10 * (hash[offset] - '0') + (hash[offset + 1] - '0');
         }
 
-        internal static bool IsValidHash(string hash, out HashFormatDescriptor format)
+        internal static bool IsValidHash(string hash,
+#if HAS_SPAN
+            out HashFormatDescriptor format)
         {
-            if (hash is null)
-            {
-                throw new ArgumentNullException(nameof(hash));
-            }
+            return IsValidHash(hash.AsSpan(), out format);
+        }
 
+        internal static bool IsValidHash(
+            ReadOnlySpan<char> hash,
+#endif
+            out HashFormatDescriptor format)
+        {
             if (hash.Length != 59 && hash.Length != 60)
             {
                 // Incorrect full hash length
